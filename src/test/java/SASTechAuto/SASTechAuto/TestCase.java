@@ -9,8 +9,7 @@ import static io.restassured.RestAssured.given;
 import java.util.List;
 
 /**
- * TestCase class contains test methods for various API related to player and
- * dice functionalities. This contains basic functionality for each end points
+ * TestCase class contains test methods for various API related to Jira issue creation. This contains basic functionality for each end points
  */
 
 public class TestCase {
