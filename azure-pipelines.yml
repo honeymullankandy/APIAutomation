@@ -1,0 +1,40 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool: Default
+
+
+variables:
+
+  JAVA_HOME: 'C:\Program Files\Java\jdk-19'
+  MAVEN_HOME: 'C:\Users\USER\Documents\apache-maven-3.9.0'
+  PATH: 'C:\Users\USER\Documents\apache-maven-3.9.0\bin;C:\Program Files\Java\jdk-19\bin;$(PATH)' 
+steps:
+  # Step 1: Check out the repository
+  - checkout: self
+
+  # Step 2: Install Maven dependencies and run tests
+  - script: |
+      mvn clean test -Dmaven.test.failure.ignore=true
+    displayName: 'Build and Run Tests with Maven'
+
+  # Step 3: Publish Test Results
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/target/surefire-reports/TEST-*.xml'  # Path to TestNG test reports
+      testRunTitle: 'TestNG API Test Results'  # Display title in Azure DevOps
+      mergeTestResults: true
+      failTaskOnFailedTests: false
+    condition: always()
+
+  # Step 4 (Optional): Publish Build Artifacts
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(System.DefaultWorkingDirectory)/target'  # Maven build output directory
+      artifactName: 'drop'  # Name for the artifact
+      publishLocation: 'Container'  # Store artifacts within Azure DevOps
