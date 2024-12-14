@@ -80,6 +80,7 @@ public class TestCase {
 	public void testGetIssue() {
 		Response response = apiUtils.getRequest("rest/api/3/issue/"+JiraId);
 		Assert.assertEquals(response.getStatusCode(), 200);
+		System.out.println("Full JSON Payload: " + response.getBody().asString());
 		Assert.assertEquals(response.jsonPath().getString("fields.summary"), "Rest API Call");
 	}
 	/**
