@@ -14,7 +14,8 @@ import java.util.List;
  */
 
 public class TestCase {
-	private ApiUtils apiUtils; // Utility instance to manage API requests
+	private ApiUtils apiUtils;
+	private int JiraId;
 
 	/**
 	 * Setup method to initialize API utilities before running the tests. Runs once
@@ -25,91 +26,71 @@ public class TestCase {
 	public void setup() {
 		apiUtils = new ApiUtils(AppConfig.getRequestSpec(), AppConfig.getResponseSpec());
 	}
+	/**
+	 * Tests the POST request to create an issue  Verifies that the status
+	 * code is 200 (OK) and that the returned Jira Id that is used for further call.
+	 */
+
+	@Test(priority = 1)
+	
+	public void testCreateissue() {
+		String jsonPayload = "{\r\n"
+				+ "    \"fields\": {\r\n"
+				+ "       \"project\":\r\n"
+				+ "       {\r\n"
+				+ "          \"key\": \"CPG\"\r\n"
+				+ "       },\r\n"
+				+ "       \"summary\": \"sample task \",\r\n"
+				+ "       \"description\": \"Creating of an issue using project keys and issue type names using the REST API\",\r\n"
+				+ "       \"issuetype\": {\r\n"
+				+ "          \"id\": \"10001\"\r\n"
+				+ "       }\r\n"
+				+ "   }\r\n"
+				+ "}";
+		Response response = apiUtils.postRequest("rest/api/2/issue",jsonPayload);
+		Assert.assertEquals(response.getStatusCode(), 201);
+		JiraId=response.jsonPath().getInt("id");
+	}
+	/**
+	 * Tests the PUT request to update summary field .
+	 * Verifies that the status code is 204
+	 */
+	
+		@Test(priority = 2)
+	public void testUpdateIssue() {
+		String jsonPayload ="{\r\n"
+				+ "    \"update\": {\r\n"
+				+ "        \"summary\":[\r\n"
+				+ "            {\r\n"
+				+ "                \"set\":\"Rest API Call\"\r\n"
+				+ "            }\r\n"
+				+ "        ]\r\n"
+				+ "    }\r\n"
+				+ "}";
+		Response response = apiUtils.putRequest("rest/api/3/issue/"+JiraId, jsonPayload);
+		Assert.assertEquals(response.getStatusCode(), 204);
+		
+	}
 
 	/**
-	 * Tests the GET request for player name. Verifies that the status code is 200
+	 * Tests the GET request for validating summary field. Verifies that the status code is 200
 	 * (OK) and that the response indicates success.
 	 */
-	@Test
-	public void testGetPlayerName() {
-		Response response = apiUtils.getRequest("playerName");
+	@Test(priority = 3)
+	public void testGetIssue() {
+		Response response = apiUtils.getRequest("rest/api/3/issue/"+JiraId);
 		Assert.assertEquals(response.getStatusCode(), 200);
-		Assert.assertEquals(response.jsonPath().getString("status"), "success");
+		Assert.assertEquals(response.jsonPath().getString("fields.summary"), "Rest API Call");
 	}
-
 	/**
-	 * Tests the PUT request to update player data without proper authorization.
-	 * Verifies that the status code is 401 (Unauthorized) and that the response
-	 * status indicates failure.
+	 * Tests the delete request delete jira id so.end of flow validates the error code.
 	 */
-
-	@Test
-	public void testPutPlayer() {
-		String jsonPayload = "{\"name\": \"foo\"}";
-		Response response = apiUtils.putRequest("playerName", jsonPayload);
-		Assert.assertEquals(response.getStatusCode(), 401);
-		Assert.assertEquals(response.jsonPath().getString("status"), "failed");
+	@Test(priority = 4)
+	public void testDeleteIssue() {
+		Response response = apiUtils.deleteRequest("rest/api/3/issue/"+JiraId);
+		Assert.assertEquals(response.getStatusCode(), 204);
+		
 	}
 
-	/**
-	 * Tests the GET request for a specific die by ID. Verifies that the status code
-	 * is 200 (OK) and that the returned die ID matches the requested ID.
-	 */
-	@Test
-	public void testGetDieID() {
-		int requestId = 1; // The die ID to request
-		Response response = apiUtils.getRequest("die/" + requestId);
-		Assert.assertEquals(response.getStatusCode(), 200);
-		Assert.assertEquals(response.jsonPath().getInt("data.id"), requestId);
-	}
-
-	/**
-	 * Tests the PUT request to update die data without authorization. Verifies that
-	 * the status code is 401 (Unauthorized) and that the response status indicates
-	 * failure.
-	 */
-	@Test
-	public void testPutDieID() {
-
-		String jsonPayload = "{\r\n" + "\"id\": 1,\r\n" + "\"value\": 5\r\n" + "}";
-
-		Response response = apiUtils.putRequest("die", jsonPayload);
-		Assert.assertEquals(response.getStatusCode(), 401);
-		Assert.assertEquals(response.jsonPath().getString("status"), "failed");
-
-	}
-
-	/**
-	 * Tests the POST request to roll a specific die by ID. Verifies that the status
-	 * code is 200 (OK) and that the returned die ID matches the requested ID.
-	 */
-
-	@Test
-	public void testPostRollDie() {
-		int requestId = 1;
-		Response response = apiUtils.postRequest("rollDie/" + requestId, "");
-		Assert.assertEquals(response.getStatusCode(), 200);
-		Assert.assertEquals(response.jsonPath().getInt("data.id"), requestId);
-	}
-
-	/**
-	 * Tests the GET request for the dice collection. Verifies that the status code
-	 * is 200 (OK) and that there exists a DataItem with id=4 and value=3 in the
-	 * response.
-	 */
-
-	@Test
-	public void testGetDice() {
-		Response response = apiUtils.getRequest("dice");// Send GET request to retrieve dice collection
-		Assert.assertEquals(response.getStatusCode(), 200);
-
-		// Deserialize the response to GetDiceResponsePayload object
-		GetDiceResponsePayLoad res = response.as(GetDiceResponsePayLoad.class);
-		List<DataItem> data = res.getData(); // Get the list of dice items from the response
-		// Check if there is a DataItem with id=4 and value=3 in the dice data
-		boolean isValid = data.stream().anyMatch(item -> item.getId() == 4 && item.getValue() == 3);
-
-		Assert.assertTrue(isValid, "Expected DataItem with id=4 and value=3");
-	}
 
 }

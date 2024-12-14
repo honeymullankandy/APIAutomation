@@ -25,5 +25,9 @@ public class ApiUtils {
     public Response postRequest(String endpoint,String jsonPayload) {
         return given().spec(requestSpec).body(jsonPayload).when().post(endpoint).then().spec(responseSpec).extract().response();
     }
+    public Response deleteRequest(String endpoint) {
+   	 return given().spec(requestSpec).when().delete(endpoint).then().spec(responseSpec).extract().response();
+     
+   }
 }
 
