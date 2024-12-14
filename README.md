@@ -78,3 +78,10 @@ using below command mvn clean test
 eg Testcase can be seen in test case folder src/test/java/Testcase.java   alternatively run as tenstNg test 
 
 validate the report in test-output/index.html
+
+CI/Cd pipeline is intgrated with azure devops
+
+
+***************  please note ************************
+
+for jira authorization please change the hostname and authorization key for individual user .here i used my private credentials
